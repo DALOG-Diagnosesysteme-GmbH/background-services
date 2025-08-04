@@ -25,7 +25,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\src\Dalog.Foundation.BackgroundServices\Dalog.Foundation.BackgroundServices.csproj" />
+      <ProjectReference Include="..\src\Dalog.Foundation.BackgroundServices\Dalog.Foundation.BackgroundServices.csproj" />
     </ItemGroup>
 
 </Project>
