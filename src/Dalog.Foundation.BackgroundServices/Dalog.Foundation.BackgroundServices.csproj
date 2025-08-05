@@ -10,11 +10,11 @@
         <Authors>Fabian Schwarz</Authors>
         <Company>DALOG</Company>
         <Product>Data Platform</Product>
-        <Copyright>© 2021 DALOG</Copyright>
-        <PackageProjectUrl>https://dev.azure.com/DALOGGmbH/Data%20Platform</PackageProjectUrl>
+        <Copyright>© 2025 DALOG</Copyright>
+        <PackageProjectUrl>https://github.com/DALOG-Diagnosesysteme-GmbH/background-services</PackageProjectUrl>
         <RepositoryType>GIT</RepositoryType>
         <RepositoryUrl>https://github.com/DALOG-Diagnosesysteme-GmbH/background-services</RepositoryUrl>
-        <Description>Contains all services for the meta data.</Description>
+        <Description>A .NET library providing robust background service implementations for channel-based message processing and cron-scheduled task execution.</Description>
     </PropertyGroup>
 
     <ItemGroup>

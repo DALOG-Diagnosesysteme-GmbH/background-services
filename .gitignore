@@ -34,6 +34,8 @@ bld/
 [Ll]og/
 [Ll]ogs/
 .idea/
+CLAUDE.md
+.claude/
 
 # Build results on 'Bin' directories
 **/[Bb]in/*

@@ -1,0 +1,141 @@
+name: CICD
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+    types: [ closed ]
+
+env:
+  DOTNET_VERSION: '9.0.x'
+  SOLUTION_PATH: 'src/Dalog.Foundation.BackgroundServices.sln'
+  PROJECT_PATH: 'src/Dalog.Foundation.BackgroundServices/Dalog.Foundation.BackgroundServices.csproj'
+  NUGET_SOURCE: 'https://api.nuget.org/v3/index.json'
+
+jobs:
+  determine-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      should-publish: ${{ steps.version.outputs.should-publish }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Install GitVersion
+      uses: gittools/actions/gitversion/setup@v1.1.1
+      with:
+        versionSpec: '5.x'
+
+    - name: Determine Version
+      id: gitversion
+      uses: gittools/actions/gitversion/execute@v1.1.1
+      with:
+        useConfigFile: true
+        configFilePath: GitVersion.yml
+
+    - name: Set version output
+      id: version
+      run: |
+        if [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref }}" = "refs/heads/main" ]; then
+          echo "version=${{ steps.gitversion.outputs.majorMinorPatch }}" >> $GITHUB_OUTPUT
+          echo "should-publish=true" >> $GITHUB_OUTPUT
+        elif [ "${{ github.event_name }}" = "pull_request" ] && [ "${{ github.event.action }}" = "closed" ] && [ "${{ github.event.pull_request.merged }}" = "true" ]; then
+          echo "version=${{ steps.gitversion.outputs.majorMinorPatch }}-preview.${{ steps.gitversion.outputs.preReleaseNumber }}" >> $GITHUB_OUTPUT
+          echo "should-publish=true" >> $GITHUB_OUTPUT
+        else
+          echo "should-publish=false" >> $GITHUB_OUTPUT
+        fi
+
+  build-and-publish:
+    needs: determine-version
+    if: needs.determine-version.outputs.should-publish == 'true'
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Cache NuGet packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+
+    - name: Restore dependencies
+      run: dotnet restore ${{ env.SOLUTION_PATH }}
+
+    - name: Build solution
+      run: dotnet build ${{ env.SOLUTION_PATH }} --no-restore --configuration Release
+
+    - name: Run tests
+      run: dotnet test ${{ env.SOLUTION_PATH }} --no-build --configuration Release --verbosity normal
+
+    - name: Pack NuGet package
+      run: |
+        dotnet pack ${{ env.PROJECT_PATH }} \
+          --no-build \
+          --configuration Release \
+          --output ./artifacts \
+          -p:PackageVersion=${{ needs.determine-version.outputs.version }} \
+          -p:AssemblyVersion=${{ needs.determine-version.outputs.version }} \
+          -p:FileVersion=${{ needs.determine-version.outputs.version }}
+
+    - name: Upload package artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: nuget-package
+        path: ./artifacts/*.nupkg
+
+    - name: Publish to NuGet (Draft for PRs)
+      if: github.event_name == 'pull_request'
+      run: |
+        dotnet nuget push ./artifacts/*.nupkg \
+          --source ${{ env.NUGET_SOURCE }} \
+          --api-key ${{ secrets.NUGET_API_KEY }} \
+          --skip-duplicate \
+          --no-symbols
+
+    - name: Publish to NuGet (Release for main)
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      run: |
+        dotnet nuget push ./artifacts/*.nupkg \
+          --source ${{ env.NUGET_SOURCE }} \
+          --api-key ${{ secrets.NUGET_API_KEY }} \
+          --skip-duplicate \
+          --no-symbols
+
+    - name: Create GitHub Release
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v${{ needs.determine-version.outputs.version }}
+        release_name: Release v${{ needs.determine-version.outputs.version }}
+        draft: false
+        prerelease: false
+        body: |
+          ## Changes
+          
+          Automated release v${{ needs.determine-version.outputs.version }}
+          
+          ### NuGet Package
+          
+          This release is available on NuGet:
+          ```
+          dotnet add package Dalog.Foundation.BackgroundServices --version ${{ needs.determine-version.outputs.version }}
+          ```
