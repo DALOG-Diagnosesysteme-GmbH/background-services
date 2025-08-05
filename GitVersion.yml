@@ -45,6 +45,5 @@ build-metadata-padding: 4
 commits-since-version-source-padding: 4
 
 tag-prefix: 'v'
-version-filters: []
 
 commit-message-incrementing: Enabled

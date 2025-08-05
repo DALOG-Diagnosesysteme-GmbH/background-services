@@ -44,7 +44,7 @@ jobs:
 
       - name: Security audit
         run: |
-          dotnet list package --vulnerable --include-transitive 2>&1 | tee audit-results.txt
+          dotnet list package ${{ env.SOLUTION_PATH }} --vulnerable --include-transitive 2>&1 | tee audit-results.txt
           if grep -i "vulnerable" audit-results.txt; then
             echo "::error::Vulnerable packages found!"
             exit 1
