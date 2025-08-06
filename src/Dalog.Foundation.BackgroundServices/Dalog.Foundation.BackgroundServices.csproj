@@ -14,7 +14,7 @@
         <PackageProjectUrl>https://github.com/DALOG-Diagnosesysteme-GmbH/background-services</PackageProjectUrl>
         <RepositoryType>GIT</RepositoryType>
         <RepositoryUrl>https://github.com/DALOG-Diagnosesysteme-GmbH/background-services</RepositoryUrl>
-        <Description>A .NET library providing robust background service implementations for channel-based message processing and cron-scheduled task execution.</Description>
+        <Description>A .NET library providing robust background service implementations for channel-based message processing, cron-scheduled task execution, and Azure Service Bus message processing.</Description>
     </PropertyGroup>
 
     <ItemGroup>
