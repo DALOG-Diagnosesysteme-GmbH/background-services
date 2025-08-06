@@ -57,7 +57,7 @@ internal sealed class ChannelBackgroundService<TQueueItem, THandler> : Backgroun
         {
             _logger.LogWarning("Queue<{Type}>: shutdown may drop remaining items. Set DrainQueueOnShutdown = true to avoid this", typeof(TQueueItem).Name);
         }
-        
+
         await base.StopAsync(cancellationToken);
     }
 
@@ -114,7 +114,7 @@ internal sealed class ChannelBackgroundService<TQueueItem, THandler> : Backgroun
             catch (Exception ex)
             {
                 lastException = ex;
-                
+
                 if (attempts < maxAttempts)
                 {
                     _logger.LogWarning(ex, "Attempt {Attempt}/{MaxAttempts} failed for Queue<{Type}>. Retrying in {Delay}ms",

@@ -1,6 +1,6 @@
 # Background Services
 
-A .NET library providing robust background service implementations for channel-based message processing and cron-scheduled task execution.
+A .NET library providing robust background service implementations for channel-based message processing, cron-scheduled task execution, and Azure Service Bus message processing.
 
 ## Features
 
@@ -17,6 +17,14 @@ A .NET library providing robust background service implementations for channel-b
 - **Cron scheduling**: Support for cron expressions with optional seconds
 - **Flexible execution**: Choice between waiting for completion or fire-and-forget
 - **Timeout support**: Configurable timeouts for scheduled tasks
+
+### Azure Service Bus Background Services
+
+- **Message processing**: Process messages from Azure Service Bus queues
+- **JSON serialization**: Automatic JSON deserialization of message bodies
+- **Application properties**: Access to message application properties
+- **Prefetch support**: Configurable prefetch count for performance optimization
+- **Auto-complete**: Automatic message completion on successful processing
 
 ## Installation
 
@@ -75,6 +83,41 @@ services.AddCronBackgroundService<MaintenanceHandler>(options =>
 });
 ```
 
+### Azure Service Bus Background Service
+
+```csharp
+// Define your message type
+public class OrderMessage
+{
+    public string OrderId { get; set; }
+    public decimal Amount { get; set; }
+}
+
+// Define your handler
+public class OrderHandler : IAzureServiceBusHandler<OrderMessage>
+{
+    public async Task Handle(OrderMessage message, IReadOnlyDictionary<string, object> applicationProperties, 
+        CancellationToken cancellationToken)
+    {
+        // Process the order message
+        await ProcessOrderAsync(message);
+    }
+}
+
+// Register in DI container
+services.AddAzureServiceBusBackgroundService<OrderMessage, OrderHandler>(options =>
+{
+    options.ConnectionString = "Endpoint=sb://myservicebus.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=...";
+    options.QueueName = "orders";
+    options.PrefetchCount = 10;
+});
+
+// Or use the simplified overload
+services.AddAzureServiceBusBackgroundService<OrderMessage, OrderHandler>(
+    connectionString: "Endpoint=sb://myservicebus.servicebus.windows.net/;...",
+    queueName: "orders");
+```
+
 ## Testing
 
 The library includes comprehensive unit tests covering:
@@ -91,9 +134,14 @@ The library includes comprehensive unit tests covering:
 - **Options Tests**: Configuration validation and cron expression parsing
 - **Validation Tests**: Invalid cron expression handling
 
+### Azure Service Bus Services
+
+- **Injection Tests**: Service registration and dependency injection
+- **Options Tests**: Configuration validation and connection string handling
+
 ### Test Coverage
 
-- ✅ 52 unit tests covering all public APIs
+- ✅ 81 unit tests covering all public APIs
 - ✅ Dependency injection validation
 - ✅ Configuration options testing
 - ✅ Error handling scenarios
@@ -122,6 +170,12 @@ dotnet test
 - `TimeoutInMinutes`: Maximum execution time (default: 33)
 - `WaitForRequestCompletion`: Wait for previous execution to complete (default: true)
 - `IncludingSeconds`: Whether cron expression includes seconds (default: false)
+
+### AzureServiceBusBackgroundServiceOptions
+
+- `ConnectionString`: Azure Service Bus connection string
+- `QueueName`: Name of the Azure Service Bus queue
+- `PrefetchCount`: Number of messages to prefetch (default: 0)
 
 ## License
 
