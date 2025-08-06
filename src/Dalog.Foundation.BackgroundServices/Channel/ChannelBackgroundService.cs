@@ -59,7 +59,7 @@ internal sealed class ChannelBackgroundService<TQueueItem> : BackgroundService
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation("Executing Queue<{Type}> background service...", typeof(TQueueItem).Name);
-        await foreach(var item in _channelReader.Dequeue(stoppingToken))
+        await foreach (var item in _channelReader.Dequeue(stoppingToken))
         {
             var sw = new Stopwatch();
             sw.Start();
