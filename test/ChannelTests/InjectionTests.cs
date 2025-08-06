@@ -21,7 +21,7 @@ public class InjectionTests
         var serviceProvider = serviceCollection.BuildServiceProvider();
 
         // Assert
-        Assert.NotNull(serviceProvider.GetRequiredService<IChannelHandler<string>>());
+        Assert.NotNull(serviceProvider.GetRequiredService<TestChannelHandler>());
         Assert.NotNull(serviceProvider.GetRequiredService<IChannelWriter<string>>());
         Assert.NotNull(serviceProvider.GetRequiredService<IChannelReader<string>>());
         Assert.NotNull(serviceProvider.GetRequiredService<IOptions<ChannelBackgroundServiceOptions<string>>>());
