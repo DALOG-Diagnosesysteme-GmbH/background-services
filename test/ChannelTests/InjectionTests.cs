@@ -98,7 +98,7 @@ public class InjectionTests
         // Assert
         var reader = serviceProvider.GetRequiredService<IChannelReader<string>>();
         var writer = serviceProvider.GetRequiredService<IChannelWriter<string>>();
-        
+
         // Both should be the same instance of ChannelService
         Assert.Same(reader, writer);
     }
@@ -110,7 +110,7 @@ public class InjectionTests
         ServiceCollection? serviceCollection = null;
 
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => 
+        Assert.Throws<ArgumentNullException>(() =>
             serviceCollection!.AddChannelBackgroundService<string, TestChannelHandler>());
     }
 
