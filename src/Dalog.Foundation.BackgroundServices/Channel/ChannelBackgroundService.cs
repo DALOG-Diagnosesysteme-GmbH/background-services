@@ -52,18 +52,19 @@ internal sealed class ChannelBackgroundService<TQueueItem, THandler> : Backgroun
         {
             _logger.LogInformation("Queue<{Type}>: Draining remaining items before shutdown...", typeof(TQueueItem).Name);
             _channelReader.Complete();
-            await base.StopAsync(cancellationToken);
         }
         else
         {
             _logger.LogWarning("Queue<{Type}>: shutdown may drop remaining items. Set DrainQueueOnShutdown = true to avoid this", typeof(TQueueItem).Name);
         }
+        
+        await base.StopAsync(cancellationToken);
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation("Executing Queue<{Type}> background service...", typeof(TQueueItem).Name);
-        await foreach(var item in _channelReader.Dequeue(stoppingToken))
+        await foreach (var item in _channelReader.Dequeue(stoppingToken))
         {
             var sw = new Stopwatch();
             sw.Start();
@@ -98,23 +99,29 @@ internal sealed class ChannelBackgroundService<TQueueItem, THandler> : Backgroun
 
         int attempts = 0;
         int maxAttempts = _options.RetryAttempts + 1;
+        Exception? lastException = null;
 
         while (attempts < maxAttempts)
         {
             try
             {
+                attempts++;
                 using var scope = _serviceProvider.CreateScope();
                 var handler = scope.ServiceProvider.GetRequiredService<THandler>();
                 await handler.Handle(item, cancellationToken);
                 return; // Success
             }
-            catch (Exception ex) when (attempts < maxAttempts - 1)
+            catch (Exception ex)
             {
-                attempts++;
-                _logger.LogWarning(ex, "Attempt {Attempt}/{MaxAttempts} failed for Queue<{Type}>. Retrying in {Delay}ms",
-                    attempts, maxAttempts, typeof(TQueueItem).Name, _options.RetryDelay.TotalMilliseconds);
+                lastException = ex;
+                
+                if (attempts < maxAttempts)
+                {
+                    _logger.LogWarning(ex, "Attempt {Attempt}/{MaxAttempts} failed for Queue<{Type}>. Retrying in {Delay}ms",
+                        attempts, maxAttempts, typeof(TQueueItem).Name, _options.RetryDelay.TotalMilliseconds);
 
-                await Task.Delay(_options.RetryDelay, cancellationToken);
+                    await Task.Delay(_options.RetryDelay, cancellationToken);
+                }
             }
         }
 
@@ -125,7 +132,7 @@ internal sealed class ChannelBackgroundService<TQueueItem, THandler> : Backgroun
         {
             try
             {
-                await _options.OnError(new Exception($"Failed to process item after {maxAttempts} attempts."), item, cancellationToken);
+                await _options.OnError(lastException ?? new Exception($"Failed to process item after {maxAttempts} attempts."), item, cancellationToken);
             }
             catch (Exception ex)
             {

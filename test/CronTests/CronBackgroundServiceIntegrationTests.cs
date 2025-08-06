@@ -19,7 +19,7 @@ public class CronBackgroundServiceIntegrationTests
         {
             options.CronExpression = "* * * * *"; // Every minute (won't actually execute in this short test)
         });
-        
+
         var serviceProvider = serviceCollection.BuildServiceProvider();
         var hostedService = serviceProvider.GetServices<IHostedService>()
             .First(s => s.GetType().Name.Contains("CronBackgroundService"));
@@ -36,7 +36,7 @@ public class CronBackgroundServiceIntegrationTests
         // Arrange
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddLogging();
-        
+
         // Register handler explicitly
         serviceCollection.AddSingleton<CountingCronHandler>();
         serviceCollection.AddCronBackgroundService<CountingCronHandler>(options =>
@@ -45,7 +45,7 @@ public class CronBackgroundServiceIntegrationTests
             options.IncludingSeconds = true;
             options.TimeoutInMinutes = 1;
         });
-        
+
         var serviceProvider = serviceCollection.BuildServiceProvider();
         var hostedService = serviceProvider.GetServices<IHostedService>()
             .First(s => s.GetType().Name.Contains("CronBackgroundService"));
@@ -53,10 +53,10 @@ public class CronBackgroundServiceIntegrationTests
 
         // Act
         await hostedService.StartAsync(CancellationToken.None);
-        
+
         // Wait for at least one execution (but not too long to avoid test timeout)
         await Task.Delay(2000); // 2 seconds should be enough for at least one execution
-        
+
         await hostedService.StopAsync(CancellationToken.None);
 
         // Assert
@@ -69,7 +69,7 @@ public class CronBackgroundServiceIntegrationTests
         // Arrange
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddLogging();
-        
+
         // Register handler explicitly
         serviceCollection.AddSingleton<SlowCronHandler>();
         serviceCollection.AddCronBackgroundService<SlowCronHandler>(options =>
@@ -79,7 +79,7 @@ public class CronBackgroundServiceIntegrationTests
             options.WaitForRequestCompletion = true;
             options.TimeoutInMinutes = 1;
         });
-        
+
         var serviceProvider = serviceCollection.BuildServiceProvider();
         var hostedService = serviceProvider.GetServices<IHostedService>()
             .First(s => s.GetType().Name.Contains("CronBackgroundService"));
@@ -87,13 +87,13 @@ public class CronBackgroundServiceIntegrationTests
 
         // Act
         await hostedService.StartAsync(CancellationToken.None);
-        
+
         // Wait for at least one execution to start
         await Task.Delay(1200); // Wait longer than one second to allow execution to start
-        
+
         // Check that only one execution has started (due to WaitForRequestCompletion=true)
         var executionCount = handler.ExecutionCount;
-        
+
         await hostedService.StopAsync(CancellationToken.None);
 
         // Assert
@@ -108,7 +108,7 @@ public class CronBackgroundServiceIntegrationTests
         // Arrange
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddLogging();
-        
+
         // Register handler explicitly
         serviceCollection.AddSingleton<CountingCronHandler>(); // Use fast handler for this test
         serviceCollection.AddCronBackgroundService<CountingCronHandler>(options =>
@@ -118,7 +118,7 @@ public class CronBackgroundServiceIntegrationTests
             options.WaitForRequestCompletion = false;
             options.TimeoutInMinutes = 1;
         });
-        
+
         var serviceProvider = serviceCollection.BuildServiceProvider();
         var hostedService = serviceProvider.GetServices<IHostedService>()
             .First(s => s.GetType().Name.Contains("CronBackgroundService"));
@@ -126,10 +126,10 @@ public class CronBackgroundServiceIntegrationTests
 
         // Act
         await hostedService.StartAsync(CancellationToken.None);
-        
+
         // Wait for multiple potential executions
         await Task.Delay(2500); // 2.5 seconds should allow multiple executions to start
-        
+
         await hostedService.StopAsync(CancellationToken.None);
 
         // Assert

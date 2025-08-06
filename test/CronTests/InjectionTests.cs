@@ -123,7 +123,7 @@ public class InjectionTests
         var serviceCollection = new ServiceCollection();
 
         // Act & Assert
-        Assert.Throws<CrontabException>(() => 
+        Assert.Throws<CrontabException>(() =>
             serviceCollection.AddCronBackgroundService<CronHandler>(invalidCronExpression));
     }
 
@@ -141,7 +141,7 @@ public class InjectionTests
         // Act & Assert - Should not throw
         serviceCollection.AddCronBackgroundService<CronHandler>(validCronExpression);
         var serviceProvider = serviceCollection.BuildServiceProvider();
-        
+
         var options = serviceProvider.GetRequiredService<IOptions<CronBackgroundServiceOptions<CronHandler>>>();
         Assert.Equal(validCronExpression, options.Value.CronExpression);
     }
@@ -153,7 +153,7 @@ public class InjectionTests
         ServiceCollection? serviceCollection = null;
 
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => 
+        Assert.Throws<ArgumentNullException>(() =>
             serviceCollection!.AddCronBackgroundService<CronHandler>());
     }
 
@@ -167,7 +167,7 @@ public class InjectionTests
         var serviceCollection = new ServiceCollection();
 
         // Act & Assert
-        Assert.ThrowsAny<ArgumentException>(() => 
+        Assert.ThrowsAny<ArgumentException>(() =>
             serviceCollection.AddCronBackgroundService<CronHandler>(cronExpression!));
     }
 
@@ -181,7 +181,7 @@ public class InjectionTests
         // Act & Assert - Should not throw
         serviceCollection.AddCronBackgroundService<CronHandler>(cronExpressionWithSeconds, includingSeconds: true);
         var serviceProvider = serviceCollection.BuildServiceProvider();
-        
+
         var options = serviceProvider.GetRequiredService<IOptions<CronBackgroundServiceOptions<CronHandler>>>();
         Assert.Equal(cronExpressionWithSeconds, options.Value.CronExpression);
         Assert.True(options.Value.IncludingSeconds);

@@ -37,7 +37,7 @@ public class ChannelServiceTests
         // Assert
         var receivedItems = new List<string>();
         var cancellationTokenSource = new CancellationTokenSource();
-        
+
         // Cancel after a short delay to prevent infinite waiting
         _ = Task.Run(async () =>
         {
@@ -72,7 +72,7 @@ public class ChannelServiceTests
 
         // Act & Assert
         cancellationTokenSource.Cancel();
-        
+
         await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
         {
             await foreach (var item in channelService.Dequeue(cancellationTokenSource.Token))
@@ -98,7 +98,7 @@ public class ChannelServiceTests
         {
             itemsReceived++;
         }
-        
+
         Assert.Equal(1, itemsReceived);
     }
 
@@ -118,7 +118,7 @@ public class ChannelServiceTests
         // Assert
         var receivedItems = new List<int>();
         var cancellationTokenSource = new CancellationTokenSource();
-        
+
         _ = Task.Run(async () =>
         {
             await Task.Delay(1000);
@@ -151,7 +151,7 @@ public class ChannelServiceTests
 
         // Act & Assert
         cancellationTokenSource.Cancel();
-        
+
         await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
             await channelService.Enqueue("test", cancellationTokenSource.Token));
     }

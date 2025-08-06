@@ -29,8 +29,8 @@ public class ChannelBackgroundServiceOptionsTests
         const int expectedRetryAttempts = 5;
         var expectedRetryDelay = TimeSpan.FromMinutes(1);
         const bool expectedDrainQueue = false;
-        
-        Func<Exception, string, CancellationToken, Task> expectedOnError = 
+
+        Func<Exception, string, CancellationToken, Task> expectedOnError =
             (ex, item, ct) => Task.CompletedTask;
 
         // Act
