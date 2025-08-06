@@ -1,5 +1,8 @@
 // Copyright (C) DALOG Diagnosesysteme GmbH - All Rights Reserved
 
+using System;
+using NCrontab;
+
 namespace Dalog.Foundation.BackgroundServices.Cron;
 
 /// <summary>
@@ -36,4 +39,23 @@ public class CronBackgroundServiceOptions<THandler> where THandler : class, ICro
     /// If set to <c>true</c>, the cron expression will account for seconds in its schedule.
     /// </summary>
     public bool IncludingSeconds { get; set; }
+
+    /// <summary>
+    /// Validates the configuration options for the cron-based background service.
+    /// Ensures that the <see cref="CronExpression"/> is not null or empty, parses it to verify its validity,
+    /// and checks that <see cref="TimeoutInMinutes"/> is greater than 0.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown if the <see cref="CronExpression"/> is null, empty, or invalid, or if <see cref="TimeoutInMinutes"/> is less than or equal to 0.
+    /// </exception>
+    public void Validate()
+    {
+        if (string.IsNullOrWhiteSpace(CronExpression))
+            throw new InvalidOperationException("CronExpression must not be null or empty.");
+
+        _ = CrontabSchedule.Parse(CronExpression, new CrontabSchedule.ParseOptions { IncludingSeconds = IncludingSeconds });
+
+        if (TimeoutInMinutes <= 0)
+            throw new InvalidOperationException("TimeoutInMinutes must be greater than 0.");
+    }
 }

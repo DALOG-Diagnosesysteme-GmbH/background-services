@@ -45,4 +45,29 @@ public class ChannelBackgroundServiceOptions<TQueueItem>
     /// If set to <c>true</c>, the service will process all remaining items in the queue before shutting down.
     /// </summary>
     public bool DrainQueueOnShutdown { get; set; } = true;
+
+    /// <summary>
+    /// Validates the configuration options for the channel-based background service.
+    /// Ensures that <see cref="TimeoutInMinutes"/> is greater than 0, <see cref="RetryAttempts"/> is non-negative,
+    /// and <see cref="RetryDelay"/> is not less than <see cref="TimeSpan.Zero"/>.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown if any of the configuration options are invalid:
+    /// <list type="bullet">
+    /// <item><description><see cref="TimeoutInMinutes"/> is less than or equal to 0.</description></item>
+    /// <item><description><see cref="RetryAttempts"/> is negative.</description></item>
+    /// <item><description><see cref="RetryDelay"/> is less than <see cref="TimeSpan.Zero"/>.</description></item>
+    /// </list>
+    /// </exception>
+    public void Validate()
+    {
+        if (TimeoutInMinutes <= 0)
+            throw new InvalidOperationException("TimeoutInMinutes must be greater than 0.");
+
+        if (RetryAttempts < 0)
+            throw new InvalidOperationException("RetryAttempts must be greater than 0.");
+
+        if (RetryDelay < TimeSpan.Zero)
+            throw new InvalidOperationException("RetryDelay must be greater than TimeSpan.Zero.");
+    }
 }

@@ -3,10 +3,6 @@ name: Security
 on:
   schedule:
     - cron: '0 6 * * 1'  # Weekly on Monday at 6 AM UTC
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
 
 env:
   DOTNET_VERSION: '9.0.x'
@@ -44,7 +40,7 @@ jobs:
 
       - name: Security audit
         run: |
-          dotnet list package ${{ env.SOLUTION_PATH }} --vulnerable --include-transitive 2>&1 | tee audit-results.txt
+          dotnet list ${{ env.SOLUTION_PATH }} package --vulnerable --include-transitive 2>&1 | tee audit-results.txt
           if grep -i "vulnerable" audit-results.txt; then
             echo "::error::Vulnerable packages found!"
             exit 1

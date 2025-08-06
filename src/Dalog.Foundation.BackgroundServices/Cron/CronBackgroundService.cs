@@ -1,6 +1,7 @@
 // Copyright (C) DALOG Diagnosesysteme GmbH - All Rights Reserved
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -38,6 +39,9 @@ internal sealed class CronBackgroundService<THandler> : BackgroundService where 
     public override Task StartAsync(CancellationToken cancellationToken)
     {
         _logger.LogInformation("Starting Cron<{Type}> background service...", typeof(THandler).Name);
+
+        _options.Validate();
+
         return base.StartAsync(cancellationToken);
     }
 
@@ -81,6 +85,11 @@ internal sealed class CronBackgroundService<THandler> : BackgroundService where 
 
     private async Task RunRequest(CancellationToken cancellationToken)
     {
+        using var activity = _logger.BeginScope(new Dictionary<string, object>
+        {
+            ["MessageHandler"] = typeof(THandler).Name,
+        });
+
         var sw = new Stopwatch();
         sw.Start();
         try

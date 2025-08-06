@@ -46,14 +46,14 @@ public static class ChannelInjectionExtensions
         ArgumentNullException.ThrowIfNull(services);
 
         // Register the handler
-        services.TryAddScoped<IChannelHandler<TQueueItem>, THandler>();
+        services.TryAddScoped<THandler>();
 
         // Register queue infrastructure
         var channel = new ChannelService<TQueueItem>();
         services.TryAddSingleton<IChannelWriter<TQueueItem>>(channel);
         services.TryAddSingleton<IChannelReader<TQueueItem>>(channel);
 
-        services.AddHostedService<ChannelBackgroundService<TQueueItem>>();
+        services.AddHostedService<ChannelBackgroundService<TQueueItem, THandler>>();
 
 
         // Configure options

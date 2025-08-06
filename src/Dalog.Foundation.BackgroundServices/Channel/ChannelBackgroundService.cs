@@ -1,6 +1,7 @@
 // Copyright (C) DALOG Diagnosesysteme GmbH - All Rights Reserved
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,15 +12,15 @@ using Microsoft.Extensions.Options;
 
 namespace Dalog.Foundation.BackgroundServices.Channel;
 
-internal sealed class ChannelBackgroundService<TQueueItem> : BackgroundService
+internal sealed class ChannelBackgroundService<TQueueItem, THandler> : BackgroundService where THandler : class, IChannelHandler<TQueueItem>
 {
-    private readonly ILogger<ChannelBackgroundService<TQueueItem>> _logger;
+    private readonly ILogger<ChannelBackgroundService<TQueueItem, THandler>> _logger;
     private readonly IServiceProvider _serviceProvider;
     private readonly IChannelReader<TQueueItem> _channelReader;
     private readonly ChannelBackgroundServiceOptions<TQueueItem> _options;
 
     public ChannelBackgroundService(
-        ILogger<ChannelBackgroundService<TQueueItem>> logger,
+        ILogger<ChannelBackgroundService<TQueueItem, THandler>> logger,
         IServiceProvider serviceProvider,
         IChannelReader<TQueueItem> channelReader,
         IOptions<ChannelBackgroundServiceOptions<TQueueItem>> options)
@@ -38,6 +39,9 @@ internal sealed class ChannelBackgroundService<TQueueItem> : BackgroundService
     public override Task StartAsync(CancellationToken cancellationToken)
     {
         _logger.LogInformation("Starting Queue<{Type}> background service...", typeof(TQueueItem).Name);
+
+        _options.Validate();
+
         return base.StartAsync(cancellationToken);
     }
 
@@ -86,6 +90,12 @@ internal sealed class ChannelBackgroundService<TQueueItem> : BackgroundService
 
     private async Task ProcessItem(TQueueItem item, CancellationToken cancellationToken)
     {
+        using var activity = _logger.BeginScope(new Dictionary<string, object>
+        {
+            ["MessageType"] = typeof(TQueueItem).Name,
+            ["MessageHandler"] = typeof(THandler).Name,
+        });
+
         int attempts = 0;
         int maxAttempts = _options.RetryAttempts + 1;
 
@@ -94,7 +104,7 @@ internal sealed class ChannelBackgroundService<TQueueItem> : BackgroundService
             try
             {
                 using var scope = _serviceProvider.CreateScope();
-                var handler = scope.ServiceProvider.GetRequiredService<IChannelHandler<TQueueItem>>();
+                var handler = scope.ServiceProvider.GetRequiredService<THandler>();
                 await handler.Handle(item, cancellationToken);
                 return; // Success
             }
