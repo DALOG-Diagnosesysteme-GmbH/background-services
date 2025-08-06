@@ -17,6 +17,7 @@ public class ChannelBackgroundServiceIntegrationTests
 
         // Register handler explicitly to access it later
         serviceCollection.AddSingleton<TestChannelHandler>();
+        serviceCollection.AddSingleton<IChannelHandler<string>>(provider => provider.GetRequiredService<TestChannelHandler>());
         serviceCollection.AddChannelBackgroundService<string, TestChannelHandler>();
 
         var serviceProvider = serviceCollection.BuildServiceProvider();
@@ -32,7 +33,7 @@ public class ChannelBackgroundServiceIntegrationTests
         await writer.Enqueue("test2");
         await writer.Enqueue("test3");
 
-        // Wait longer for processing
+        // Wait for processing
         await Task.Delay(500);
 
         // Stop the service
@@ -54,6 +55,7 @@ public class ChannelBackgroundServiceIntegrationTests
 
         // Register handler explicitly to access it later
         serviceCollection.AddSingleton<FailingChannelHandler>();
+        serviceCollection.AddSingleton<IChannelHandler<string>>(provider => provider.GetRequiredService<FailingChannelHandler>());
         serviceCollection.AddChannelBackgroundService<string, FailingChannelHandler>(options =>
         {
             options.RetryAttempts = 2;
@@ -93,6 +95,7 @@ public class ChannelBackgroundServiceIntegrationTests
 
         // Register handler explicitly
         serviceCollection.AddSingleton<FailingChannelHandler>();
+        serviceCollection.AddSingleton<IChannelHandler<string>>(provider => provider.GetRequiredService<FailingChannelHandler>());
         serviceCollection.AddChannelBackgroundService<string, FailingChannelHandler>(options =>
         {
             options.RetryAttempts = 1;
