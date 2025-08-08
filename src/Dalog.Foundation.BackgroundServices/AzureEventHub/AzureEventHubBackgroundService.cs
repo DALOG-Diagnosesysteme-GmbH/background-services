@@ -154,20 +154,20 @@ internal sealed class AzureEventHubBackgroundService<TMessage, THandler> : Backg
     {
         _logger.LogCritical(
             args.Exception,
-            "Error retrieving  AEH<{Type}>: '{Message}'",
+            "Error retrieving AEH<{Type}>: '{Message}'",
             typeof(TMessage).Name, args.Exception.Message);
         return Task.CompletedTask;
     }
 
     private Task ProcessorOnPartitionClosingAsync(PartitionClosingEventArgs arg)
     {
-        _logger.LogInformation("AEH<{Type}> partition '{Name} closing of '{Reason}'", typeof(TMessage).Name, arg.PartitionId, arg.Reason.ToString());
+        _logger.LogInformation("AEH<{Type}> partition '{Name}' closing of '{Reason}'", typeof(TMessage).Name, arg.PartitionId, arg.Reason.ToString());
         return Task.CompletedTask;
     }
 
     private Task ProcessorOnPartitionInitializingAsync(PartitionInitializingEventArgs arg)
     {
-        _logger.LogInformation("AEH<{Type}> partition '{Name} initializing on position '{Position}'", typeof(TMessage).Name, arg.PartitionId, arg.DefaultStartingPosition.ToString());
+        _logger.LogInformation("AEH<{Type}> partition '{Name}' initializing on position '{Position}'", typeof(TMessage).Name, arg.PartitionId, arg.DefaultStartingPosition.ToString());
         return Task.CompletedTask;
     }
 }

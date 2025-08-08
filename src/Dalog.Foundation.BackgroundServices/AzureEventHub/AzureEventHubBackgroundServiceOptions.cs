@@ -57,12 +57,24 @@ public class AzureEventHubBackgroundServiceOptions<TMessage> : IBackgroundServic
     public void Validate()
     {
         if (string.IsNullOrWhiteSpace(StorageConnectionString))
-            throw new ArgumentException("Storage connection string must be provided.", nameof(StorageConnectionString));
+            throw new InvalidOperationException("Storage connection string must be provided.");
 
         if (string.IsNullOrWhiteSpace(StorageContainerName))
-            throw new ArgumentException("Storage container name must be provided.", nameof(StorageContainerName));
+            throw new InvalidOperationException("Storage container name must be provided.");
 
         if (string.IsNullOrWhiteSpace(EventHubConnectionString))
-            throw new ArgumentException("Event Hub connection string must be provided.", nameof(EventHubConnectionString));
+            throw new InvalidOperationException("Event Hub connection string must be provided.");
+
+        if (PrefetchCount < 0)
+            throw new InvalidOperationException("Prefetch count must be greater than zero.");
+
+        if (MaximumWaitTime <= TimeSpan.Zero)
+            throw new InvalidOperationException("Maximum wait time must be greater than zero.");
+
+        if (LoadBalancingUpdateInterval <= TimeSpan.Zero)
+            throw new InvalidOperationException("Load balancing update interval must be greater than zero.");
+
+        if (string.IsNullOrWhiteSpace(ConsumerGroupName))
+            throw new InvalidOperationException("Consumer group name must be provided.");
     }
 }
