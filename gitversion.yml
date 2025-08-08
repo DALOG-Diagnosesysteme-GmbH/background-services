@@ -3,11 +3,10 @@ branches:
   main:
     regex: ^main$
     increment: Patch
-    tag: ""
     track-merge-target: false
     prevent-increment-of-merged-branch-version: false
   unknown:
     regex: (?<BranchName>.+)
     increment: Patch
-    tag: alpha
+    tag: 'preview'
 commit-message-incrementing: Enabled
