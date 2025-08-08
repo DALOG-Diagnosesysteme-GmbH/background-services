@@ -89,7 +89,7 @@ public class ChannelBackgroundServiceIntegrationTests
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddLogging();
 
-        var errorCallbackInvoked = false;
+        bool errorCallbackInvoked = false;
         string? errorItem = null;
         Exception? errorException = null;
 

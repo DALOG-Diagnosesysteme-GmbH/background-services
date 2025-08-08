@@ -17,7 +17,7 @@ public class ChannelServiceTests
         await channelService.Enqueue(testItem);
 
         // Assert - Item should be available for dequeue
-        await foreach (var item in channelService.Dequeue(CancellationToken.None))
+        await foreach (string item in channelService.Dequeue(CancellationToken.None))
         {
             Assert.Equal(testItem, item);
             break; // Only check first item
@@ -29,25 +29,25 @@ public class ChannelServiceTests
     {
         // Arrange
         var channelService = new ChannelService<string>();
-        var testItems = new[] { "item1", "item2", "item3" };
+        string[] testItems = ["item1", "item2", "item3"];
 
         // Act
         await channelService.EnqueueRange(testItems);
 
         // Assert
         var receivedItems = new List<string>();
-        var cancellationTokenSource = new CancellationTokenSource();
+        using var cancellationTokenSource = new CancellationTokenSource();
 
         // Cancel after a short delay to prevent infinite waiting
         _ = Task.Run(async () =>
         {
             await Task.Delay(1000);
-            cancellationTokenSource.Cancel();
+            await cancellationTokenSource.CancelAsync();
         });
 
         try
         {
-            await foreach (var item in channelService.Dequeue(cancellationTokenSource.Token))
+            await foreach (string item in channelService.Dequeue(cancellationTokenSource.Token))
             {
                 receivedItems.Add(item);
                 if (receivedItems.Count == testItems.Length)
@@ -68,14 +68,14 @@ public class ChannelServiceTests
     {
         // Arrange
         var channelService = new ChannelService<string>();
-        var cancellationTokenSource = new CancellationTokenSource();
+        using var cancellationTokenSource = new CancellationTokenSource();
 
         // Act & Assert
-        cancellationTokenSource.Cancel();
+        await cancellationTokenSource.CancelAsync();
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
         {
-            await foreach (var item in channelService.Dequeue(cancellationTokenSource.Token))
+            await foreach (string _ in channelService.Dequeue(cancellationTokenSource.Token))
             {
                 // Should not reach here
             }
@@ -93,8 +93,8 @@ public class ChannelServiceTests
         channelService.Complete();
 
         // Assert - Dequeue should complete after processing existing items
-        var itemsReceived = 0;
-        await foreach (var item in channelService.Dequeue(CancellationToken.None))
+        int itemsReceived = 0;
+        await foreach (string _ in channelService.Dequeue(CancellationToken.None))
         {
             itemsReceived++;
         }
@@ -107,27 +107,27 @@ public class ChannelServiceTests
     {
         // Arrange
         var channelService = new ChannelService<int>();
-        var expectedOrder = Enumerable.Range(1, 10).ToArray();
+        int[] expectedOrder = Enumerable.Range(1, 10).ToArray();
 
         // Act
-        foreach (var number in expectedOrder)
+        foreach (int number in expectedOrder)
         {
             await channelService.Enqueue(number);
         }
 
         // Assert
         var receivedItems = new List<int>();
-        var cancellationTokenSource = new CancellationTokenSource();
+        using var cancellationTokenSource = new CancellationTokenSource();
 
         _ = Task.Run(async () =>
         {
             await Task.Delay(1000);
-            cancellationTokenSource.Cancel();
+            await cancellationTokenSource.CancelAsync();
         });
 
         try
         {
-            await foreach (var item in channelService.Dequeue(cancellationTokenSource.Token))
+            await foreach (int item in channelService.Dequeue(cancellationTokenSource.Token))
             {
                 receivedItems.Add(item);
                 if (receivedItems.Count == expectedOrder.Length)
@@ -147,10 +147,10 @@ public class ChannelServiceTests
     {
         // Arrange
         var channelService = new ChannelService<string>();
-        var cancellationTokenSource = new CancellationTokenSource();
+        using var cancellationTokenSource = new CancellationTokenSource();
 
         // Act & Assert
-        cancellationTokenSource.Cancel();
+        await cancellationTokenSource.CancelAsync();
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
             await channelService.Enqueue("test", cancellationTokenSource.Token));

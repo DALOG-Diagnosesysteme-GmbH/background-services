@@ -78,6 +78,7 @@ public class CronBackgroundServiceOptionsTests
     }
 
     // Test helper class
+    // ReSharper disable once ClassNeverInstantiated.Local
     private sealed class TestCronHandler : ICronHandler
     {
         public Task Handle(CancellationToken cancellationToken) => Task.CompletedTask;

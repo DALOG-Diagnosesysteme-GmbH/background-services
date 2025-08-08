@@ -91,9 +91,10 @@ public class InjectionTests
     // Test helper classes
     private sealed class TestMessage
     {
-        public string Content { get; set; } = string.Empty;
+        // Empty class for testing purposes
     }
 
+    // ReSharper disable once ClassNeverInstantiated.Local
     private sealed class TestAzureEventHubHandler : IAzureEventHubHandler<TestMessage>
     {
         public Task Handle(TestMessage message, CancellationToken cancellationToken) => Task.CompletedTask;

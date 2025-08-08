@@ -1,6 +1,5 @@
 // Copyright (C) DALOG Diagnosesysteme GmbH - All Rights Reserved
 
-using System;
 using Dalog.Foundation.BackgroundServices.AzureEventHub;
 
 namespace Dalog.Foundation.BackgroundServicesTests.AzureEventHubTests;
@@ -243,6 +242,6 @@ public class AzureEventHubBackgroundServiceOptionsTests
     // Test helper class
     private sealed class TestMessage
     {
-        public string Content { get; set; } = string.Empty;
+        // Empty class for testing purposes
     }
 }

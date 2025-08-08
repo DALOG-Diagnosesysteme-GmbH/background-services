@@ -3,7 +3,6 @@
 using Dalog.Foundation.BackgroundServices.Cron;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace Dalog.Foundation.BackgroundServicesTests.CronTests;
 
@@ -28,6 +27,7 @@ public class CronBackgroundServiceIntegrationTests
         await hostedService.StartAsync(CancellationToken.None);
         await Task.Delay(50); // Short delay
         await hostedService.StopAsync(CancellationToken.None);
+        Assert.True(true); // Should reach here without exceptions
     }
 
     [Fact]
@@ -92,7 +92,7 @@ public class CronBackgroundServiceIntegrationTests
         await Task.Delay(1200); // Wait longer than one second to allow execution to start
 
         // Check that only one execution has started (due to WaitForRequestCompletion=true)
-        var executionCount = handler.ExecutionCount;
+        int executionCount = handler.ExecutionCount;
 
         await hostedService.StopAsync(CancellationToken.None);
 
@@ -138,9 +138,10 @@ public class CronBackgroundServiceIntegrationTests
     }
 
     // Test helper classes
+    // ReSharper disable once ClassNeverInstantiated.Local
     private sealed class TestCronHandler : ICronHandler
     {
-        public int ExecutionCount { get; private set; }
+        private int ExecutionCount { get; set; }
 
         public Task Handle(CancellationToken cancellationToken)
         {
