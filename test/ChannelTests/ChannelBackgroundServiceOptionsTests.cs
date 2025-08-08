@@ -31,7 +31,7 @@ public class ChannelBackgroundServiceOptionsTests
         const bool expectedDrainQueue = false;
 
         Func<Exception, string, CancellationToken, Task> expectedOnError =
-            (ex, item, ct) => Task.CompletedTask;
+            (_, _, _) => Task.CompletedTask;
 
         // Act
         options.TimeoutInMinutes = expectedTimeout;
@@ -54,7 +54,7 @@ public class ChannelBackgroundServiceOptionsTests
         // Arrange
         var options = new ChannelBackgroundServiceOptions<string>
         {
-            OnError = (ex, item, ct) => Task.CompletedTask
+            OnError = (_, _, _) => Task.CompletedTask
         };
 
         // Act

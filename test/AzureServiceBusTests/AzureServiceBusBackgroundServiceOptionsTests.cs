@@ -149,6 +149,6 @@ public class AzureServiceBusBackgroundServiceOptionsTests
     // Test helper class
     private sealed class TestMessage
     {
-        public string Content { get; set; } = string.Empty;
+        // Empty class for testing purposes
     }
 }
