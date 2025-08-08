@@ -1,0 +1,11 @@
+mode: ContinuousDelivery
+branches:
+  main:
+    regex: ^main$
+    increment: Patch
+    track-merge-target: false
+  unknown:
+    regex: (?<BranchName>.+)
+    increment: Patch
+    label: "preview"
+commit-message-incrementing: Enabled

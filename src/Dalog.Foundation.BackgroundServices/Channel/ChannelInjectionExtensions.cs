@@ -18,7 +18,7 @@ public static class ChannelInjectionExtensions
     /// This method sets up the necessary infrastructure for processing items from a channel in the background.
     /// It registers the handler, channel writer, and channel reader, and configures the hosted service.
     /// </summary>
-    /// <typeparam name="TQueueItem">
+    /// <typeparam name="TMessage">
     /// The type of the items that will be processed by the channel.
     /// This represents the data type of the queue items handled by the background service.
     /// </typeparam>
@@ -39,9 +39,9 @@ public static class ChannelInjectionExtensions
     /// <exception cref="ArgumentNullException">
     /// Thrown if the <paramref name="services"/> parameter is null.
     /// </exception>
-    public static IServiceCollection AddChannelBackgroundService<TQueueItem, THandler>(this IServiceCollection services,
-        Action<ChannelBackgroundServiceOptions<TQueueItem>>? configure = null)
-        where THandler : class, IChannelHandler<TQueueItem>
+    public static IServiceCollection AddChannelBackgroundService<TMessage, THandler>(this IServiceCollection services,
+        Action<ChannelBackgroundServiceOptions<TMessage>>? configure = null)
+        where THandler : class, IChannelHandler<TMessage>
     {
         ArgumentNullException.ThrowIfNull(services);
 
@@ -49,11 +49,11 @@ public static class ChannelInjectionExtensions
         services.TryAddScoped<THandler>();
 
         // Register queue infrastructure
-        var channel = new ChannelService<TQueueItem>();
-        services.TryAddSingleton<IChannelWriter<TQueueItem>>(channel);
-        services.TryAddSingleton<IChannelReader<TQueueItem>>(channel);
+        var channel = new ChannelService<TMessage>();
+        services.TryAddSingleton<IChannelWriter<TMessage>>(channel);
+        services.TryAddSingleton<IChannelReader<TMessage>>(channel);
 
-        services.AddHostedService<ChannelBackgroundService<TQueueItem, THandler>>();
+        services.AddHostedService<ChannelBackgroundService<TMessage, THandler>>();
 
 
         // Configure options
@@ -63,7 +63,7 @@ public static class ChannelInjectionExtensions
         }
         else
         {
-            services.Configure<ChannelBackgroundServiceOptions<TQueueItem>>(_ => { });
+            services.Configure<ChannelBackgroundServiceOptions<TMessage>>(_ => { });
         }
 
         return services;
@@ -74,7 +74,7 @@ public static class ChannelInjectionExtensions
     /// and configures it with a timeout value in minutes.
     /// This method is a convenience overload that allows specifying the timeout directly.
     /// </summary>
-    /// <typeparam name="TQueueItem">
+    /// <typeparam name="TMessage">
     /// The type of the items that will be processed by the channel.
     /// This represents the data type of the queue items handled by the background service.
     /// </typeparam>
@@ -95,11 +95,11 @@ public static class ChannelInjectionExtensions
     /// <exception cref="ArgumentNullException">
     /// Thrown if the <paramref name="services"/> parameter is null.
     /// </exception>
-    public static IServiceCollection AddChannelBackgroundService<TQueueItem, THandler>(
+    public static IServiceCollection AddChannelBackgroundService<TMessage, THandler>(
         this IServiceCollection services,
         int timeoutInMinutes)
-        where THandler : class, IChannelHandler<TQueueItem>
-        => services.AddChannelBackgroundService<TQueueItem, THandler>(options =>
+        where THandler : class, IChannelHandler<TMessage>
+        => services.AddChannelBackgroundService<TMessage, THandler>(options =>
         {
             options.TimeoutInMinutes = timeoutInMinutes;
         });

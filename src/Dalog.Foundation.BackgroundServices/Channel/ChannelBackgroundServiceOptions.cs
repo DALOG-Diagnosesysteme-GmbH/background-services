@@ -11,10 +11,10 @@ namespace Dalog.Foundation.BackgroundServices.Channel;
 /// This class provides settings to control the behavior of the background service,
 /// such as timeout, retry attempts, retry delay, error handling, and queue draining on shutdown.
 /// </summary>
-/// <typeparam name="TQueueItem">
+/// <typeparam name="TMessage">
 /// The type of the items that will be processed by the background service.
 /// </typeparam>
-public class ChannelBackgroundServiceOptions<TQueueItem> : IBackgroundServiceOptions
+public class ChannelBackgroundServiceOptions<TMessage> : IBackgroundServiceOptions
 {
     /// <summary>
     /// Gets or sets the timeout value, in minutes, for processing items in the background service.
@@ -38,7 +38,7 @@ public class ChannelBackgroundServiceOptions<TQueueItem> : IBackgroundServiceOpt
     /// Gets or sets a callback function to handle errors that occur during item processing.
     /// This function is invoked with the exception, the item being processed, and a cancellation token.
     /// </summary>
-    public Func<Exception, TQueueItem, CancellationToken, Task>? OnError { get; set; }
+    public Func<Exception, TMessage, CancellationToken, Task>? OnError { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether the service should drain the queue on shutdown.

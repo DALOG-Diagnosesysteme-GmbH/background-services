@@ -12,18 +12,18 @@ using Microsoft.Extensions.Options;
 
 namespace Dalog.Foundation.BackgroundServices.Channel;
 
-internal sealed class ChannelBackgroundService<TQueueItem, THandler> : BackgroundService where THandler : class, IChannelHandler<TQueueItem>
+internal sealed class ChannelBackgroundService<TMessage, THandler> : BackgroundService where THandler : class, IChannelHandler<TMessage>
 {
-    private readonly ILogger<ChannelBackgroundService<TQueueItem, THandler>> _logger;
+    private readonly ILogger<ChannelBackgroundService<TMessage, THandler>> _logger;
     private readonly IServiceProvider _serviceProvider;
-    private readonly IChannelReader<TQueueItem> _channelReader;
-    private readonly ChannelBackgroundServiceOptions<TQueueItem> _options;
+    private readonly IChannelReader<TMessage> _channelReader;
+    private readonly ChannelBackgroundServiceOptions<TMessage> _options;
 
     public ChannelBackgroundService(
-        ILogger<ChannelBackgroundService<TQueueItem, THandler>> logger,
+        ILogger<ChannelBackgroundService<TMessage, THandler>> logger,
         IServiceProvider serviceProvider,
-        IChannelReader<TQueueItem> channelReader,
-        IOptions<ChannelBackgroundServiceOptions<TQueueItem>> options)
+        IChannelReader<TMessage> channelReader,
+        IOptions<ChannelBackgroundServiceOptions<TMessage>> options)
     {
         ArgumentNullException.ThrowIfNull(logger);
         ArgumentNullException.ThrowIfNull(serviceProvider);
@@ -38,7 +38,7 @@ internal sealed class ChannelBackgroundService<TQueueItem, THandler> : Backgroun
 
     public override Task StartAsync(CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Starting Queue<{Type}> background service...", typeof(TQueueItem).Name);
+        _logger.LogInformation("Starting Queue<{Type}> background service...", typeof(TMessage).Name);
 
         _options.Validate();
 
@@ -47,15 +47,15 @@ internal sealed class ChannelBackgroundService<TQueueItem, THandler> : Backgroun
 
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Stopping Queue<{Type}> background service...", typeof(TQueueItem).Name);
+        _logger.LogInformation("Stopping Queue<{Type}> background service...", typeof(TMessage).Name);
         if (_options.DrainQueueOnShutdown)
         {
-            _logger.LogInformation("Queue<{Type}>: Draining remaining items before shutdown...", typeof(TQueueItem).Name);
+            _logger.LogInformation("Queue<{Type}>: Draining remaining items before shutdown...", typeof(TMessage).Name);
             _channelReader.Complete();
         }
         else
         {
-            _logger.LogWarning("Queue<{Type}>: shutdown may drop remaining items. Set DrainQueueOnShutdown = true to avoid this", typeof(TQueueItem).Name);
+            _logger.LogWarning("Queue<{Type}>: shutdown may drop remaining items. Set DrainQueueOnShutdown = true to avoid this", typeof(TMessage).Name);
         }
 
         await base.StopAsync(cancellationToken);
@@ -63,14 +63,14 @@ internal sealed class ChannelBackgroundService<TQueueItem, THandler> : Backgroun
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("Executing Queue<{Type}> background service...", typeof(TQueueItem).Name);
+        _logger.LogInformation("Executing Queue<{Type}> background service...", typeof(TMessage).Name);
         await foreach (var item in _channelReader.Dequeue(stoppingToken))
         {
             var sw = new Stopwatch();
             sw.Start();
             try
             {
-                _logger.LogInformation("Processing Queue<{Type}> item", typeof(TQueueItem).Name);
+                _logger.LogInformation("Processing Queue<{Type}> item", typeof(TMessage).Name);
                 using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
                 timeoutCts.CancelAfter(TimeSpan.FromMinutes(_options.TimeoutInMinutes));
                 await ProcessItem(item, timeoutCts.Token);
@@ -78,22 +78,22 @@ internal sealed class ChannelBackgroundService<TQueueItem, THandler> : Backgroun
             catch (Exception ex)
             {
                 _logger.LogCritical(ex, "Error processing Queue<{Type}>: '{Message}'",
-                    typeof(TQueueItem).Name, ex.Message);
+                    typeof(TMessage).Name, ex.Message);
             }
             finally
             {
                 sw.Stop();
                 _logger.LogInformation("Queue<{Type}> processing completed in '{Elapsed}' milliseconds",
-                    typeof(TQueueItem).Name, sw.ElapsedMilliseconds);
+                    typeof(TMessage).Name, sw.ElapsedMilliseconds);
             }
         }
     }
 
-    private async Task ProcessItem(TQueueItem item, CancellationToken cancellationToken)
+    private async Task ProcessItem(TMessage item, CancellationToken cancellationToken)
     {
         using var activity = _logger.BeginScope(new Dictionary<string, object>
         {
-            ["MessageType"] = typeof(TQueueItem).Name,
+            ["MessageType"] = typeof(TMessage).Name,
             ["MessageHandler"] = typeof(THandler).Name,
         });
 
@@ -118,7 +118,7 @@ internal sealed class ChannelBackgroundService<TQueueItem, THandler> : Backgroun
                 if (attempts < maxAttempts)
                 {
                     _logger.LogWarning(ex, "Attempt {Attempt}/{MaxAttempts} failed for Queue<{Type}>. Retrying in {Delay}ms",
-                        attempts, maxAttempts, typeof(TQueueItem).Name, _options.RetryDelay.TotalMilliseconds);
+                        attempts, maxAttempts, typeof(TMessage).Name, _options.RetryDelay.TotalMilliseconds);
 
                     await Task.Delay(_options.RetryDelay, cancellationToken);
                 }
@@ -127,7 +127,7 @@ internal sealed class ChannelBackgroundService<TQueueItem, THandler> : Backgroun
 
         // If we reach here, all attempts failed
         _logger.LogError("All {MaxAttempts} attempts failed for Queue<{Type}>, invoking OnError callback if configured",
-            maxAttempts, typeof(TQueueItem).Name);
+            maxAttempts, typeof(TMessage).Name);
         if (_options.OnError is not null)
         {
             try
@@ -137,7 +137,7 @@ internal sealed class ChannelBackgroundService<TQueueItem, THandler> : Backgroun
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error in OnError callback for Queue<{Type}>: '{Message}'",
-                    typeof(TQueueItem).Name, ex.Message);
+                    typeof(TMessage).Name, ex.Message);
             }
         }
     }
