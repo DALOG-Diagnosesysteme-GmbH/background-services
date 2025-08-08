@@ -30,10 +30,6 @@ jobs:
       - name: Determine Version
         id: gitversion
         uses: gittools/actions/gitversion/execute@v4.1.0
-        with:
-          updateAssemblyInfo: true
-          updateAssemblyInfoFilename: true
-          updateProjectFiles: true
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
