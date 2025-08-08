@@ -8,19 +8,19 @@ using System.Threading.Tasks;
 
 namespace Dalog.Foundation.BackgroundServices.Channel;
 
-internal sealed class ChannelService<TQueueItem> : IChannelWriter<TQueueItem>, IChannelReader<TQueueItem>
+internal sealed class ChannelService<TMessage> : IChannelWriter<TMessage>, IChannelReader<TMessage>
 {
-    private readonly Channel<TQueueItem> _channel = System.Threading.Channels.Channel.CreateUnbounded<TQueueItem>(new UnboundedChannelOptions
+    private readonly Channel<TMessage> _channel = System.Threading.Channels.Channel.CreateUnbounded<TMessage>(new UnboundedChannelOptions
     {
         SingleReader = true,
         SingleWriter = false,
         AllowSynchronousContinuations = false
     });
 
-    public ValueTask Enqueue(TQueueItem item, CancellationToken cancellationToken = default)
+    public ValueTask Enqueue(TMessage item, CancellationToken cancellationToken = default)
         => _channel.Writer.WriteAsync(item, cancellationToken);
 
-    public async ValueTask EnqueueRange(IEnumerable<TQueueItem> item, CancellationToken cancellationToken = default)
+    public async ValueTask EnqueueRange(IEnumerable<TMessage> item, CancellationToken cancellationToken = default)
     {
         foreach (var image in item)
         {
@@ -28,7 +28,7 @@ internal sealed class ChannelService<TQueueItem> : IChannelWriter<TQueueItem>, I
         }
     }
 
-    public async IAsyncEnumerable<TQueueItem> Dequeue([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<TMessage> Dequeue([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         await foreach (var item in _channel.Reader.ReadAllAsync(cancellationToken))
         {

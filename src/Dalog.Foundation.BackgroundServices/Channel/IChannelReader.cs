@@ -5,9 +5,9 @@ using System.Threading;
 
 namespace Dalog.Foundation.BackgroundServices.Channel;
 
-internal interface IChannelReader<out TQueueItem>
+internal interface IChannelReader<out TMessage>
 {
-    IAsyncEnumerable<TQueueItem> Dequeue(CancellationToken cancellationToken = default);
+    IAsyncEnumerable<TMessage> Dequeue(CancellationToken cancellationToken = default);
 
     void Complete();
 }
