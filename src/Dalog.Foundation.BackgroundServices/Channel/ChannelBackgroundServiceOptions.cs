@@ -14,7 +14,7 @@ namespace Dalog.Foundation.BackgroundServices.Channel;
 /// <typeparam name="TQueueItem">
 /// The type of the items that will be processed by the background service.
 /// </typeparam>
-public class ChannelBackgroundServiceOptions<TQueueItem>
+public class ChannelBackgroundServiceOptions<TQueueItem> : IBackgroundServiceOptions
 {
     /// <summary>
     /// Gets or sets the timeout value, in minutes, for processing items in the background service.
@@ -46,19 +46,7 @@ public class ChannelBackgroundServiceOptions<TQueueItem>
     /// </summary>
     public bool DrainQueueOnShutdown { get; set; } = true;
 
-    /// <summary>
-    /// Validates the configuration options for the channel-based background service.
-    /// Ensures that <see cref="TimeoutInMinutes"/> is greater than 0, <see cref="RetryAttempts"/> is non-negative,
-    /// and <see cref="RetryDelay"/> is not less than <see cref="TimeSpan.Zero"/>.
-    /// </summary>
-    /// <exception cref="InvalidOperationException">
-    /// Thrown if any of the configuration options are invalid:
-    /// <list type="bullet">
-    /// <item><description><see cref="TimeoutInMinutes"/> is less than or equal to 0.</description></item>
-    /// <item><description><see cref="RetryAttempts"/> is negative.</description></item>
-    /// <item><description><see cref="RetryDelay"/> is less than <see cref="TimeSpan.Zero"/>.</description></item>
-    /// </list>
-    /// </exception>
+    /// <inheritdoc/>
     public void Validate()
     {
         if (TimeoutInMinutes <= 0)

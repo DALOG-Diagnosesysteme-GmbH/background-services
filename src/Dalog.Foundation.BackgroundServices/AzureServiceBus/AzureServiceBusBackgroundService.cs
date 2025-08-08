@@ -51,7 +51,6 @@ internal sealed class AzureServiceBusBackgroundService<TMessage, THandler> : Bac
     public async ValueTask DisposeAsync()
     {
         await DisposeAsyncCore();
-        GC.SuppressFinalize(this);
     }
 
     public override Task StartAsync(CancellationToken cancellationToken)

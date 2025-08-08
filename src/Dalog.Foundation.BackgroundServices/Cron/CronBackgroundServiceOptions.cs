@@ -14,7 +14,7 @@ namespace Dalog.Foundation.BackgroundServices.Cron;
 /// The type of the handler that processes the cron jobs.
 /// The handler must implement the <see cref="ICronHandler"/> interface.
 /// </typeparam>
-public class CronBackgroundServiceOptions<THandler> where THandler : class, ICronHandler
+public class CronBackgroundServiceOptions<THandler> : IBackgroundServiceOptions where THandler : class, ICronHandler
 {
     /// <summary>
     /// Gets or sets the cron expression that defines the schedule for the background service.
@@ -40,14 +40,7 @@ public class CronBackgroundServiceOptions<THandler> where THandler : class, ICro
     /// </summary>
     public bool IncludingSeconds { get; set; }
 
-    /// <summary>
-    /// Validates the configuration options for the cron-based background service.
-    /// Ensures that the <see cref="CronExpression"/> is not null or empty, parses it to verify its validity,
-    /// and checks that <see cref="TimeoutInMinutes"/> is greater than 0.
-    /// </summary>
-    /// <exception cref="InvalidOperationException">
-    /// Thrown if the <see cref="CronExpression"/> is null, empty, or invalid, or if <see cref="TimeoutInMinutes"/> is less than or equal to 0.
-    /// </exception>
+    /// <inheritdoc/>
     public void Validate()
     {
         if (string.IsNullOrWhiteSpace(CronExpression))

@@ -12,7 +12,7 @@ namespace Dalog.Foundation.BackgroundServices.AzureServiceBus;
 /// The type of the message being processed by the background service.
 /// Must be a class with a parameterless constructor.
 /// </typeparam>
-public class AzureServiceBusBackgroundServiceOptions<TMessage> where TMessage : class, new()
+public class AzureServiceBusBackgroundServiceOptions<TMessage> : IBackgroundServiceOptions where TMessage : class, new()
 {
     /// <summary>
     /// Gets or sets the connection string for the Azure Service Bus.
@@ -33,19 +33,7 @@ public class AzureServiceBusBackgroundServiceOptions<TMessage> where TMessage : 
     /// </summary>
     public int PrefetchCount { get; set; } = 0;
 
-    /// <summary>
-    /// Validates the configuration options for the Azure Service Bus background service.
-    /// Ensures that the <see cref="ConnectionString"/> and <see cref="QueueName"/> are not null or empty,
-    /// and that <see cref="PrefetchCount"/> is zero or greater.
-    /// </summary>
-    /// <exception cref="InvalidOperationException">
-    /// Thrown if any of the configuration options are invalid:
-    /// <list type="bullet">
-    /// <item><description><see cref="ConnectionString"/> is null, empty, or whitespace.</description></item>
-    /// <item><description><see cref="QueueName"/> is null, empty, or whitespace.</description></item>
-    /// <item><description><see cref="PrefetchCount"/> is less than zero.</description></item>
-    /// </list>
-    /// </exception>
+    /// <inheritdoc/>
     public void Validate()
     {
         if (string.IsNullOrWhiteSpace(ConnectionString))
