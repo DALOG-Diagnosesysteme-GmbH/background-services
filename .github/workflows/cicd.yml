@@ -74,12 +74,6 @@ jobs:
             -p:AssemblyVersion=${{ steps.gitversion.outputs.assemblySemVer }} \
             -p:FileVersion=${{ steps.gitversion.outputs.assemblySemFileVer }}
 
-      - name: Upload package artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: nuget-package
-          path: ./artifacts/*.nupkg
-
       - name: Publish to NuGet
         run: |
           dotnet nuget push ./artifacts/*.nupkg \
