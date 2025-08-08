@@ -4,7 +4,6 @@ branches:
     regex: ^main$
     increment: Patch
     track-merge-target: false
-    prevent-increment-of-merged-branch-version: false
   unknown:
     regex: (?<BranchName>.+)
     increment: Patch
